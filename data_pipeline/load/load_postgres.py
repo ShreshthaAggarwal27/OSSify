@@ -34,8 +34,12 @@ def save_repository(repo_name, repo_url):
 def save_contributors(contributors_data):
     db = SessionLocal()
 
+    if not contributors_data:
+        return
+
+    contributor_objects = []
+
     for c in contributors_data:
-        # avoid duplicates
         existing = db.query(Contributor).filter_by(github_id=c["id"]).first()
         if existing:
             continue
@@ -47,7 +51,9 @@ def save_contributors(contributors_data):
             avatar_url=c["avatar_url"],
             contributions_count=c["contributions"]
         )
-        db.add(contributor)
+        contributor_objects.append(contributor)
+    
+    db.bulk_save_objects(contributor_objects)
 
     db.commit()
     db.close()
@@ -70,9 +76,23 @@ def save_commits(commits_data, repo_id):
 
         sha = c.get("sha")
 
-        # existing = db.query(Commit).filter_by(sha=sha).first()
-        # if existing:
-        #     continue
+        existing = db.query(Commit).filter_by(sha=sha).first()
+        if existing:
+            continue
+
+        author_login = None
+
+        if c.get("author"):
+            author_login = c["author"].get("login")
+
+        contributor = None
+
+        if author_login:
+            contributor = db.query(Contributor).filter_by(
+                username=author_login
+            ).first()
+
+        contributor_id = contributor.id if contributor else None
 
         commit = Commit(
             sha=sha,
@@ -80,7 +100,8 @@ def save_commits(commits_data, repo_id):
             author_name=author_data.get("name"),
             author_email=author_data.get("email"),
             date=author_data.get("date"),
-            repo_id=repo_id
+            repo_id=repo_id,
+            contributor_id=contributor_id
         )
 
         commit_objects.append(commit)

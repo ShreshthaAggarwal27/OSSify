@@ -7,5 +7,8 @@ def fetch_prs(repo_name):
 
     params = {"state": "all"}
 
-    prs = client.get_all_pages(endpoint, params=params)
+    prs = client.get(endpoint, params={
+            "state": "all",
+            "per_page": 10
+    })
     return prs

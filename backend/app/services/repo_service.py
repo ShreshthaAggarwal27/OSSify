@@ -14,34 +14,71 @@ from data_pipeline.load.load_postgres import (
 )
 
 def process_repository(repo_url: str):
+    try:
+        print("\n========== STARTING REPO PROCESS ==========")
 
-    repo_name = parse_github_url(repo_url)
+        repo_name = parse_github_url(repo_url)
+        print(f"Parsed Repo: {repo_name}")
 
-    contributors = fetch_contributors(repo_name)
-    commits = fetch_commits(repo_name)
-    prs = fetch_prs(repo_name)
-    issues = fetch_issues(repo_name)
+        print("\nFetching contributors...")
+        contributors = fetch_contributors(repo_name)
+        contributors_count = len(contributors) if contributors else 0
+        print(f"Fetched contributors: {contributors_count}")
 
-    if not commits:
-        commits = []
+        print("\nFetching commits...")
+        commits = fetch_commits(repo_name)
+        commits_count = len(commits) if commits else 0
+        print(f"Fetched commits: {commits_count}")
 
-    print("Fetching contributors...")
-    print("Fetching commits...")
-    print("Saving repository...")
-    print("Saving contributors...")
-    print("Saving commits...")
+        print("\nFetching pull requests...")
+        prs = fetch_prs(repo_name)
+        prs_count = len(prs) if prs else 0
+        print(f"Fetched PRs: {prs_count}")
 
-    save_contributors(contributors)
-    repo_id = save_repository(repo_name, repo_url)
+        print("\nFetching issues...")
+        issues = fetch_issues(repo_name)
+        issues_count = len(issues) if issues else 0
+        print(f"Fetched issues: {issues_count}")
 
-    save_commits(commits, repo_id=repo_id)
-    save_prs(prs, repo_id=repo_id)
-    save_issues(issues, repo_id=repo_id)
+        print("\nSaving repository...")
+        repo_id = save_repository(repo_name, repo_url)
+        print(f"Repository saved with ID: {repo_id}")
 
-    return {
-        "repo": repo_name,
-        "commits": len(commits),
-        "contributors": len(contributors),
-        "prs": len(prs),
-        "issues": len(issues),
-    }
+        print("\nSaving contributors...")
+        save_contributors(contributors)
+        print("Contributors saved successfully.")
+
+        print("\nSaving commits...")
+        save_commits(commits, repo_id)
+        print("Commits saved successfully.")
+
+        print("\nSaving pull requests...")
+        save_prs(prs, repo_id)
+        print("Pull requests saved successfully.")
+
+        print("\nSaving issues...")
+        save_issues(issues, repo_id)
+        print("Issues saved successfully.")
+
+        print("\n========== PROCESS COMPLETE ==========\n")
+
+        return {
+            "status": "success",
+            "repository": repo_name,
+            "contributors": contributors_count,
+            "commits": commits_count,
+            "pull_requests": prs_count,
+            "issues": issues_count
+        }
+
+    except Exception as e:
+
+        print("\n========== PROCESS FAILED ==========")
+        print("ERROR IN PROCESS_REPOSITORY:")
+        print(str(e))
+        print("====================================\n")
+
+        return {
+            "status": "failed",
+            "error": str(e)
+        }
