@@ -24,7 +24,7 @@ class GitHubClient:
             return None
         return response.json()
 
-    def get_all_pages(self, endpoint, params=None):
+    def get_all_pages(self, endpoint, params=None, max_pages=5):
         if params is None:
             params = {}
 
@@ -32,8 +32,11 @@ class GitHubClient:
         page = 1
         results = []
 
-        while True:
+        while page <= max_pages:
             params["page"] = page
+
+            print(f"Fetching page {page}: {endpoint}")
+
             data = self.get(endpoint, params=params)
 
             if not data or len(data) == 0:

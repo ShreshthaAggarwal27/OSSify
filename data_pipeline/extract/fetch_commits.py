@@ -4,5 +4,5 @@ client = GitHubClient()
 
 def fetch_commits(repo_name):
     endpoint = f"repos/{repo_name}/commits"
-    commits = client.get(endpoint, params={"per_page": 50})
+    commits = client.get_all_pages(endpoint, max_pages=5)
     return commits
