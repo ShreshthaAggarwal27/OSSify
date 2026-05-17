@@ -1,1 +1,8 @@
 .env
+.env.local
+.venv
+__pycache__/
+.github/
+.git/
+GEMINI.mdexternal_repos/
+rag_pipeline/extraction/*.json
