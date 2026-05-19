@@ -106,16 +106,23 @@ def save_commits(commits_data, repo_id):
             continue
 
         author_login = None
+        contributor = None
 
         if c.get("author"):
             author_login = c["author"].get("login")
-
-        contributor = None
 
         if author_login:
             contributor = db.query(Contributor).filter_by(
                 username=author_login
             ).first()
+
+        if not contributor:
+            commit_email = c["commit"]["author"].get("email")
+
+            if commit_email:
+                contributor = db.query(Contributor).filter(
+                    Contributor.profile_url.ilike(f"%{c['commit']['author']['name']}%")
+                ).first()
 
         commit_details = c.get("details", {})
 
