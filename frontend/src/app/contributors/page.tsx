@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getContributors, searchContributors } from "@/src/lib/contributors";
 import ContributorSearch from "@/src/components/ContributorSearch";
+import { Search, Code2, GitCommit, Award, ArrowUpRight, Users } from "lucide-react";
 
 type SortBy = "expertise" | "contributions" | "name";
 
@@ -96,28 +97,37 @@ export default function ContributorsPage() {
   }, [contributors, query, sortBy, topicFilter]);
 
   return (
-    <div>
+    <div className="px-6 py-6 max-w-7xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-4xl font-bold text-slate-900">Contributors</h1>
-          <p className="text-sm text-slate-500">Search, sort and filter contributors for the selected repository.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
+            <Users size={22} className="text-violet-600" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+              Contributors
+            </h1>
+            <p className="text-sm text-slate-500 mt-0.5">
+              Search, sort and filter contributors for the selected repository
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <ContributorSearch
             value={query}
             onChange={(v) => setQuery(v)}
             onSelect={(item) => router.push(`/contributors/${item.id}`)}
           />
 
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="rounded-xl border px-3 py-2 bg-white">
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="rounded-xl border border-slate-200 px-3.5 py-2.5 bg-white text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 shadow-sm">
             <option value="contributions">Sort: Contributions</option>
             <option value="expertise">Sort: Expertise Score</option>
             <option value="name">Sort: Name</option>
           </select>
 
-          <select value={topicFilter || ""} onChange={(e) => setTopicFilter(e.target.value || null)} className="rounded-xl border px-3 py-2 bg-white">
+          <select value={topicFilter || ""} onChange={(e) => setTopicFilter(e.target.value || null)} className="rounded-xl border border-slate-200 px-3.5 py-2.5 bg-white text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-400 shadow-sm">
             <option value="">Filter: All topics</option>
             {topics.map((t) => (
               <option key={t} value={t}>{t}</option>
@@ -126,56 +136,132 @@ export default function ContributorsPage() {
         </div>
       </div>
 
-      {/* Contributors List */}
+      {/* Contributors Grid */}
       {loading ? (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 animate-pulse h-24" />
+            <div key={i} className="bg-white rounded-2xl border border-slate-200/80 p-6 animate-pulse">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 rounded-full bg-slate-200" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 w-28 bg-slate-200 rounded" />
+                  <div className="h-4 w-20 bg-slate-200 rounded" />
+                </div>
+              </div>
+              <div className="flex gap-2 mb-5">
+                <div className="h-6 w-16 bg-slate-200 rounded-full" />
+                <div className="h-6 w-20 bg-slate-200 rounded-full" />
+                <div className="h-6 w-14 bg-slate-200 rounded-full" />
+              </div>
+              <div className="h-3 bg-slate-200 rounded-full mb-5" />
+              <div className="h-10 w-full bg-slate-200 rounded-xl" />
+            </div>
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
-          No contributors found.
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+            <Search size={24} className="text-slate-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900 mb-1">No contributors found</h3>
+          <p className="text-sm text-slate-500">Try adjusting your search or filter criteria</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {filtered.map((c) => (
-            <Link key={c.id} href={`/contributors/${c.id}`} className="block">
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md transition">
-                <div className="flex justify-between items-center">
+        <>
+          {/* Results count */}
+          <div>
+            <p className="text-sm text-slate-500">
+              Showing <span className="font-medium text-slate-700">{filtered.length}</span> {filtered.length === 1 ? "contributor" : "contributors"}
+            </p>
+          </div>
 
-                  <div className="flex items-center gap-4">
-
-                    {/* <div className="h-14 w-14 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg">
-                      {c.username ? c.username[0].toUpperCase() : "U"}
-                    </div> */}
-
-                    <img
-                      src={c.avatar_url}
-                      className="w-22 h-22 rounded-full"
-                    />
-
-                    <div>
-                      <h2 className="text-lg font-semibold text-slate-900">{c.username}</h2>
-
-                      <div className="flex gap-2 mt-2">
-                        {(c.top_expertise || []).slice(0, 4).map((skill: string) => (
-                          <span key={skill} className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs">{skill}</span>
-                        ))}
-                      </div>
-
-                      <p className="mt-3 text-sm text-slate-500">{c.commit_count} commits • Expertise {Math.round((c.expertise_score || 0) * 10)/10}</p>
+          {/* Card Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((c) => {
+              return (
+                <div
+                  key={c.id}
+                  className="group bg-white rounded-2xl border border-slate-200/80 p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col"
+                >
+                  {/* Avatar + Username */}
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="relative shrink-0">
+                      <img
+                        src={c.avatar_url}
+                        className="w-14 h-14 rounded-full object-cover ring-2 ring-slate-100 group-hover:ring-violet-200 transition-all"
+                        alt={c.username}
+                      />
+                      <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-emerald-400 border-2 border-white rounded-full" />
                     </div>
-
+                    <div className="min-w-0 flex-1">
+                      <h2 className="font-semibold text-base text-slate-900 truncate group-hover:text-violet-700 transition-colors">
+                        {c.username}
+                      </h2>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
+                        <Award size={12} />
+                        <span>Contributor</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="text-2xl text-slate-400">→</div>
+                  {/* Expertise Tags */}
+                  <div className="flex flex-wrap gap-1.5 mb-5 min-h-[28px]">
+                    {(c.top_expertise || []).slice(0, 4).map((skill: string, idx: number) => (
+                      <span
+                        key={`${skill}-${idx}`}
+                        className="px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 text-xs font-medium border border-violet-200/50"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                    {(c.top_expertise || []).length > 4 && (
+                      <span className="px-2.5 py-1 rounded-full bg-slate-50 text-slate-500 text-xs font-medium border border-slate-200">
+                        +{c.top_expertise.length - 4}
+                      </span>
+                    )}
+                  </div>
 
+                  {/* Commit Count + Expertise Score */}
+                  <div className="grid grid-cols-2 gap-3 mb-5">
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
+                        <GitCommit size={12} />
+                        <span>Commits</span>
+                      </div>
+                      <p className="text-lg font-bold text-slate-900">
+                        {c.commit_count || 0}
+                      </p>
+                    </div>
+                    <div className="bg-violet-50 rounded-xl p-3 border border-violet-100">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
+                        <Code2 size={12} />
+                        <span>Expertise</span>
+                      </div>
+                      <p className="text-lg font-bold text-violet-700">
+                        {Math.round((c.expertise_score || 0) * 10) / 10}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Spacer */}
+                  <div className="flex-1" />
+
+                  {/* Divider */}
+                  <div className="border-t border-slate-100 mb-4" />
+
+                  {/* View Profile Button */}
+                  <Link
+                    href={`/contributors/${c.id}`}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-medium shadow-md shadow-violet-200 hover:shadow-lg hover:shadow-violet-300 hover:from-violet-500 hover:to-indigo-500 transition-all duration-200 group/btn"
+                  >
+                    <span>View Profile</span>
+                    <ArrowUpRight size={15} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                  </Link>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );
